@@ -3,7 +3,9 @@ using Assignment.Controllers;
 using Assignment.Converters;
 using Assignment.Storage;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Primitives;
 using NSubstitute;
 
 namespace Assignment.Tests
@@ -23,7 +25,13 @@ namespace Assignment.Tests
             _sut = new DocumentsController(
                 _storage,
                 _xmlConverter,
-                _messagePackConverter);
+                _messagePackConverter)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext()
+                }
+            };
         }
 
         [Fact]
@@ -31,7 +39,7 @@ namespace Assignment.Tests
         {
             _storage.Load(Guid.Empty).Returns(new JsonElement());
 
-            var response = _sut.Get(Guid.Empty, "unknown");
+            var response = _sut.Get(Guid.Empty);
 
             response.Should().BeOfType<BadRequestObjectResult>();
         }
@@ -43,7 +51,8 @@ namespace Assignment.Tests
             _storage.Load(Guid.Empty).Returns(content);
             _xmlConverter.Convert(content).Returns("<Root></Root>");
 
-            var response = _sut.Get(Guid.Empty, "xml");
+            _sut.Request.Headers.Accept = new StringValues("application/xml");
+            var response = _sut.Get(Guid.Empty);
 
             response
                 .Should().BeOfType<OkObjectResult>()

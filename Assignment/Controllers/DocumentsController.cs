@@ -11,39 +11,42 @@ namespace Assignment.Controllers
     [Route("[controller]")]
     public class DocumentsController : Controller
     {
-        public const string XmlCode = "xml";
-        public const string MessagePackCode = "messagePack";
         private readonly ICachedStorage _storage;
         private readonly IConverter _xmlConverter;
-        private readonly IConverter _messagePackConverter;
+        private readonly IConverter _msgpackConverter;
 
         public DocumentsController(
             ICachedStorage storage,
-            [FromKeyedServices(XmlCode)] IConverter xmlConverter,
-            [FromKeyedServices(MessagePackCode)] IConverter messagePackConverter)
+            [FromKeyedServices(XmlConverter.DocumentCode)] IConverter xmlConverter,
+            [FromKeyedServices(MsgPackConverter.DocumentCode)] IConverter msgpackConverter)
         {
             _storage = storage;
             _xmlConverter = xmlConverter;
-            _messagePackConverter = messagePackConverter;
+            _msgpackConverter = msgpackConverter;
         }
 
         [HttpGet]
         [Route("{id}")]
-        public IActionResult Get(
-            [Required][FromRoute] Guid id, 
-            [Required][FromHeader] string documentCode)
+        public IActionResult Get([Required][FromRoute] Guid id)
         {
             var document = _storage.Load(id);
             if (!document.HasValue)
             {
                 return NotFound($"Document {id} was not found");
             }
-
-            return documentCode switch
+            
+            if (Request.Headers.Accept.Contains(XmlConverter.DocumentCode))
             {
-                XmlCode => Ok(_xmlConverter.Convert(document.Value)),
-                MessagePackCode => Ok(_messagePackConverter.Convert(document.Value)),
-                _ => BadRequest($"{documentCode} format is not supported")
+                return Ok(_xmlConverter.Convert(document.Value));
+            }
+            else if (Request.Headers.Accept.Contains(MsgPackConverter.DocumentCode))
+            {
+
+                return Ok(_msgpackConverter.Convert(document.Value));
+            }
+            else
+            {
+                return BadRequest($"None from specified formats is supported");
             };
         }
 

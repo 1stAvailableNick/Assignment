@@ -6,6 +6,8 @@ namespace Assignment.Converters
 {
     public class XmlConverter : IConverter
     {
+        public const string DocumentCode = "application/xml";
+
         public object Convert(JsonElement value)
         {
             var content = ConvertRecursive(value);

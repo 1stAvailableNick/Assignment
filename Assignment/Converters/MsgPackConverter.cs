@@ -3,8 +3,10 @@ using MessagePack;
 
 namespace Assignment.Converters
 {
-    public class MessagePackConverter : IConverter
+    public class MsgPackConverter : IConverter
     {
+        public const string DocumentCode = "application/msgpack";
+
         public object Convert(JsonElement value)
         {
             return MessagePackSerializer.ConvertFromJson(

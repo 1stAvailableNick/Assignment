@@ -1,4 +1,3 @@
-using Assignment.Controllers;
 using Assignment.Converters;
 using Assignment.Storage;
 
@@ -6,8 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSingleton<ICachedStorage, CachedStorage>();
 builder.Services.AddTransient<IStorage, InMemoryStorage>();
-builder.Services.AddKeyedSingleton<IConverter, XmlConverter>(DocumentsController.XmlCode);
-builder.Services.AddKeyedSingleton<IConverter, MessagePackConverter>(DocumentsController.MessagePackCode);
+builder.Services.AddKeyedSingleton<IConverter, XmlConverter>(XmlConverter.DocumentCode);
+builder.Services.AddKeyedSingleton<IConverter, MsgPackConverter>(MsgPackConverter.DocumentCode);
 builder.Services.AddMemoryCache();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
